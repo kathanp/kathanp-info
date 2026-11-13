@@ -178,6 +178,11 @@ export default function Contact() {
           }}
         >
           <p className="term-boot">Last login: {login} on console</p>
+          <p className="term-why">
+            One question at a time. I ask your name, an email I can reply to, who you are, and what
+            you want to say. When you finish, your mail app opens with the note filled in. You send
+            it from there, and it reaches me in {profile.location}.
+          </p>
 
           {steps.slice(0, cursor).map((id) => (
             <div key={id} className="term-turn">

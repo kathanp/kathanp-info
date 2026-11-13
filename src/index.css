@@ -37,16 +37,21 @@ body {
   user-select: none;
   background-color: var(--bg);
   background-image:
-    linear-gradient(rgba(228, 255, 84, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(228, 255, 84, 0.045) 1px, transparent 1px);
+    linear-gradient(rgba(228, 255, 84, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(228, 255, 84, 0.16) 1px, transparent 1px);
   background-size: 56px 56px;
-  background-position: center top;
+  animation: grid-drift 8s linear infinite;
   color: var(--body);
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+@keyframes grid-drift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 56px 56px, 56px 56px; }
 }
 
 :focus-visible {
@@ -808,13 +813,20 @@ a {
 
 .term-boot,
 .term-q,
+.term-why,
 .term-line,
 .term-error {
   margin: 0;
 }
 
+.term-why {
+  max-width: 62ch;
+  margin-top: 14px;
+}
+
 .term-boot,
 .term-q,
+.term-why,
 .term-prompt,
 .term-answer {
   color: #33ff33;
@@ -2254,6 +2266,7 @@ a {
   body {
     background: white;
     color: #1b1b1b;
+    animation: none;
   }
 
   .navbar,
