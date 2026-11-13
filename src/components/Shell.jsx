@@ -39,7 +39,7 @@ export default function Shell() {
       </a>
       <header className="titlebar">
         <p className="titlebar-path">
-          <span>kathan@dallas</span>
+          <span>kathan@localhost</span>
           <span>:{here}</span>
         </p>
         <NavLink
