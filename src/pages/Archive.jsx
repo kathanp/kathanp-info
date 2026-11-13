@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { archiveId } from "../components/CommandBar.jsx"
 import { archive } from "../content.js"
 import { useTitle } from "../hooks/useTitle.js"
 
@@ -23,7 +24,7 @@ export default function Archive() {
         </thead>
         <tbody>
           {archive.map((item) => (
-            <tr key={item.name}>
+            <tr key={item.name} id={archiveId(item.name)}>
               <td className="catalog-year" data-label="Year">
                 {item.year}
               </td>

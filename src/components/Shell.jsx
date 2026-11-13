@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { nav, profile } from "../content.js"
 import { CodePenIcon, GitHubIcon, GitLabIcon, LinkedInIcon, NpmIcon } from "./Icons.jsx"
+import CommandBar from "./CommandBar.jsx"
 import Cursor from "./Cursor.jsx"
 import SignalBar from "./SignalBar.jsx"
 
@@ -42,12 +43,15 @@ export default function Shell() {
           <span>kathan@localhost</span>
           <span>:{here}</span>
         </p>
-        <NavLink
-          to="/contact"
-          className={({ isActive }) => (isActive ? "hire-button active" : "hire-button")}
-        >
-          Hire me
-        </NavLink>
+        <div className="titlebar-actions">
+          <CommandBar />
+          <NavLink
+            to="/contact"
+            className={({ isActive }) => (isActive ? "hire-button active" : "hire-button")}
+          >
+            Hire me
+          </NavLink>
+        </div>
       </header>
       <div className="workspace">
         <aside className="rail">
