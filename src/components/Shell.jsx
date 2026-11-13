@@ -1,22 +1,23 @@
 import { useEffect } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { nav, profile } from "../content.js"
-import { CodePenIcon, GitHubIcon, GitLabIcon, InstagramIcon, LinkedInIcon, NpmIcon } from "./Icons.jsx"
+import { CodePenIcon, GitHubIcon, GitLabIcon, LinkedInIcon, NpmIcon } from "./Icons.jsx"
+import Cursor from "./Cursor.jsx"
 import SignalBar from "./SignalBar.jsx"
 
 const icons = {
   GitHub: GitHubIcon,
   LinkedIn: LinkedInIcon,
   CodePen: CodePenIcon,
-  Instagram: InstagramIcon,
   GitLab: GitLabIcon,
   npm: NpmIcon,
 }
 
-const footerOrder = ["GitHub", "LinkedIn", "CodePen", "Instagram", "GitLab", "npm"]
+const footerOrder = ["GitHub", "LinkedIn", "CodePen", "GitLab", "npm"]
 
 export default function Shell() {
   const { pathname, hash } = useLocation()
+  const here = pathname === "/" ? "~" : `~${pathname}`
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -32,64 +33,83 @@ export default function Shell() {
 
   return (
     <div className="shell">
+      <Cursor />
       <a className="skip" href="#content">
         Skip to content
       </a>
-      <header className="navbar">
-        <Link to="/" className="navbar-title">
-          {profile.name}
-        </Link>
-        <div className="navbar-actions">
+      <header className="titlebar">
+        <p className="titlebar-path">
+          <span>kathan@dallas</span>
+          <span>:{here}</span>
+        </p>
+        <NavLink
+          to="/contact"
+          className={({ isActive }) => (isActive ? "hire-button active" : "hire-button")}
+        >
+          Hire me
+        </NavLink>
+      </header>
+      <div className="workspace">
+        <aside className="rail">
+          <Link to="/" className="rail-name">
+            {profile.name}
+          </Link>
+          <p className="rail-role">{profile.role}</p>
           <nav aria-label="Primary">
+            <p className="rail-label">files</p>
             <ul>
               {nav.map((item) => (
                 <li key={item.to}>
                   <NavLink
                     to={item.to}
-                    className={({ isActive }) => (isActive ? "navbar-link active" : "navbar-link")}
+                    className={({ isActive }) => (isActive ? "rail-link active" : "rail-link")}
                   >
-                    <span className="navbar-index">{item.index}</span>
-                    {item.label}
+                    <span>{item.index}</span>
+                    {item.label.toLowerCase()}
                   </NavLink>
                 </li>
               ))}
             </ul>
           </nav>
-          <NavLink
-            to="/contact"
-            className={({ isActive }) => (isActive ? "hire-button active" : "hire-button")}
+        </aside>
+        <div className="desk">
+          <main
+            id="content"
+            className={
+              pathname === "/" || pathname === "/about" ? "stage stage-center" : "stage"
+            }
+            tabIndex={-1}
           >
-            Hire me
-          </NavLink>
+            <Outlet />
+          </main>
+          <footer className="dock">
+            <SignalBar />
+            <div className="dock-end">
+              <ul className="socials">
+                {footerOrder.map((label) => {
+                  const link = profile.links.find((item) => item.label === label)
+                  const Icon = icons[label]
+                  return (
+                    <li key={label}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        aria-label={`${label}, opens in a new tab`}
+                      >
+                        <Icon size={18} />
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="copyright">
+                <Link to="/">© {new Date().getFullYear()} {profile.name}</Link>
+              </p>
+            </div>
+          </footer>
         </div>
-      </header>
-      <SignalBar />
-      <main id="content" className="stage" tabIndex={-1}>
-        <Outlet />
-      </main>
-      <footer className="footer">
-        <ul className="socials">
-          {footerOrder.map((label) => {
-            const link = profile.links.find((item) => item.label === label)
-            const Icon = icons[label]
-            return (
-              <li key={label}>
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={`${label}, opens in a new tab`}
-                >
-                  <Icon size={20} />
-                </a>
-              </li>
-            )
-          })}
-        </ul>
-        <p className="copyright">
-          <Link to="/">© {new Date().getFullYear()} {profile.name}</Link>
-        </p>
-      </footer>
+      </div>
     </div>
   )
 }

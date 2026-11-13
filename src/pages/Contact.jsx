@@ -1,191 +1,290 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import SectionHeading from "../components/SectionHeading.jsx"
 import { profile } from "../content.js"
 import { useTitle } from "../hooks/useTitle.js"
 
-const kinds = ["Company", "Organizer", "Small project", "Freelance or other work", "Someone else"]
+const kinds = [
+  { value: "Company", label: "company" },
+  { value: "Organizer", label: "organizer" },
+  { value: "Small project", label: "project" },
+  { value: "Freelance or other work", label: "freelance" },
+  { value: "Someone else", label: "other" },
+]
+
+const steps = ["name", "email", "kind", "organization", "message"]
 
 function requiresOrganization(kind) {
   return kind === "Company" || kind === "Organizer"
 }
 
-const empty = {
-  name: "",
-  email: "",
-  organization: "",
-  kind: "Company",
-  message: "",
-  honey: "",
+function matchKind(text) {
+  const query = text.trim().toLowerCase()
+  if (!query) return null
+  const exact = kinds.find((kind) => kind.label === query || kind.value.toLowerCase() === query)
+  if (exact) return exact
+  const prefix = kinds.filter(
+    (kind) => kind.label.startsWith(query) || kind.value.toLowerCase().startsWith(query),
+  )
+  return prefix.length === 1 ? prefix[0] : null
 }
 
-function validate(values) {
-  const errors = {}
-  if (!values.name.trim()) errors.name = "Add your name."
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Add an email so I can reply."
+function question(step, values) {
+  if (step === "name") return "What is your name?"
+  if (step === "email") return "What email should I reply to?"
+  if (step === "kind") return "Which one are you?"
+  if (step === "organization") {
+    if (values.kind === "Company") return "What is the company name?"
+    if (values.kind === "Organizer") return "What is the organization?"
+    return "What is the project? Press enter to skip."
   }
-  if (requiresOrganization(values.kind) && !values.organization.trim()) {
-    errors.organization = "Add the company or organization."
+  return "What do you want to say?"
+}
+
+function shownAnswer(step, values) {
+  if (step === "kind") return kinds.find((kind) => kind.value === values.kind)?.label || values.kind
+  if (step === "organization" && !values.organization) return "skipped"
+  return values[step]
+}
+
+function check(step, text, values) {
+  if (step === "name") return text ? "" : "Add your name."
+  if (step === "email") return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text) ? "" : "Add an email so I can reply."
+  if (step === "kind") return matchKind(text) ? "" : "Type company, organizer, project, freelance, or other."
+  if (step === "organization") {
+    if (requiresOrganization(values.kind) && !text) return "Add the company or organization."
+    return ""
   }
-  if (values.message.trim().length < 12) errors.message = "Write a short message, at least a sentence."
-  return errors
+  if (text.length < 12) return "Write a short message, at least a sentence."
+  return ""
+}
+
+function loginStamp() {
+  return new Date().toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
+function promptText(known) {
+  if (known.email && known.name) return `${known.name}@localhost:~ $`
+  if (known.name) return `localhost:~ ${known.name}$`
+  return "localhost:~ $"
+}
+
+function knownBefore(step, values) {
+  const index = steps.indexOf(step)
+  const known = {}
+  steps.slice(0, index).forEach((id) => {
+    if (values[id]) known[id] = values[id]
+  })
+  return known
 }
 
 export default function Contact() {
   useTitle("Contact")
-  const [values, setValues] = useState(empty)
-  const [errors, setErrors] = useState({})
-  const [status, setStatus] = useState("idle")
+  const inputRef = useRef(null)
+  const [login] = useState(loginStamp)
+  const [values, setValues] = useState({
+    name: "",
+    email: "",
+    organization: "",
+    kind: "",
+    message: "",
+    honey: "",
+  })
+  const [cursor, setCursor] = useState(0)
+  const [draft, setDraft] = useState("")
+  const [error, setError] = useState("")
+  const [sent, setSent] = useState(false)
 
-  function update(event) {
-    const { name, value } = event.target
-    setValues((current) => ({ ...current, [name]: value }))
-    setErrors((current) => {
-      const next = { ...current, [name]: undefined }
-      if (name === "kind" && !requiresOrganization(value)) next.organization = undefined
-      return next
-    })
-  }
+  const step = steps[cursor]
+  const finished = sent || cursor >= steps.length
 
-  function onSubmit(event) {
-    event.preventDefault()
-    const next = validate(values)
-    setErrors(next)
-    if (Object.keys(next).length > 0) return
-    if (values.honey) {
-      setStatus("sent")
-      return
-    }
+  useEffect(() => {
+    if (!finished) inputRef.current?.focus()
+  }, [cursor, finished])
 
-    const name = values.name.trim()
-    const email = values.email.trim()
-    const organization = values.organization.trim()
-    const message = values.message.trim()
-    const subject = `Hire me — ${name} (${values.kind})`
+  function openMail(next) {
+    setSent(true)
+    if (next.honey) return
+    const name = next.name.trim()
+    const email = next.email.trim()
+    const organization = next.organization.trim()
+    const message = next.message.trim()
+    const subject = `Hire me — ${name} (${next.kind})`
     const body = [
       `Name: ${name}`,
       `Email: ${email}`,
       `Company, organization, or project: ${organization || "None given"}`,
-      `From: ${values.kind}`,
+      `From: ${next.kind}`,
       "",
       message,
     ].join("\n")
-
-    setStatus("sent")
     window.setTimeout(() => {
       window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     }, 0)
   }
 
+  function accept(raw) {
+    const text = raw.trim()
+    const problem = check(step, text, values)
+    if (problem) {
+      setError(problem)
+      return
+    }
+
+    const next = { ...values }
+    if (step === "kind") next.kind = matchKind(text).value
+    else next[step] = text
+
+    setValues(next)
+    setDraft("")
+    setError("")
+    setCursor((current) => current + 1)
+    if (step === "message") openMail(next)
+  }
+
+  function reset() {
+    setValues({ name: "", email: "", organization: "", kind: "", message: "", honey: "" })
+    setCursor(0)
+    setDraft("")
+    setError("")
+    setSent(false)
+  }
+
   return (
     <div className="page">
-      <SectionHeading>Contact</SectionHeading>
-      <p className="lede">
-        A company, an organizer, or anyone with a small project, freelance work, or anything else can send a message here. I'm in {profile.location}.
-      </p>
+      <SectionHeading index="05">Contact</SectionHeading>
 
-      {status === "sent" ? (
-        <div className="form-success" role="status">
-          <p className="form-success-title">Message ready</p>
-          <p>Your email app should open with this message already written. Send it from there and it reaches me.</p>
-          <button className="hire-button" type="button" onClick={() => setStatus("idle")}>
-            Write another
-          </button>
+      <div className="term">
+        <div className="term-titlebar">
+          <span className="term-lights" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="term-title">zsh</span>
+          <span />
         </div>
-      ) : (
-        <form className="contact-form" onSubmit={onSubmit} noValidate>
-          <div className="honey" aria-hidden="true">
-            <label htmlFor="honey">
-              Leave this empty
-              <input id="honey" name="honey" value={values.honey} onChange={update} tabIndex={-1} autoComplete="off" />
-            </label>
-          </div>
 
-          <fieldset className="kind">
-            <legend>I am</legend>
-            <div className="kind-grid">
-              {kinds.map((kind) => (
-                <label key={kind} className={values.kind === kind ? "kind-option is-selected" : "kind-option"}>
+        <div
+          className="term-screen"
+          onMouseDown={(event) => {
+            if (event.target.closest("button, input, a")) return
+            inputRef.current?.focus()
+          }}
+        >
+          <p className="term-boot">Last login: {login} on console</p>
+
+          {steps.slice(0, cursor).map((id) => (
+            <div key={id} className="term-turn">
+              <p className="term-q">{question(id, values)}</p>
+              <p className="term-line">
+                <span className="term-prompt">{promptText(knownBefore(id, values))}</span>
+                <span className="term-answer">{shownAnswer(id, values)}</span>
+              </p>
+            </div>
+          ))}
+
+          {finished ? (
+            <div className="term-turn" role="status">
+              <p className="term-q">Opening your mail app. Send it from there and it reaches me in {profile.location}.</p>
+              <button className="term-line term-again" type="button" onClick={reset}>
+                <span className="term-prompt">{promptText(values)}</span>
+                <span className="term-answer">clear</span>
+              </button>
+            </div>
+          ) : (
+            <form
+              className="term-turn"
+              onSubmit={(event) => {
+                event.preventDefault()
+                accept(draft)
+              }}
+            >
+              <div className="honey" aria-hidden="true">
+                <label htmlFor="honey">
+                  Leave this empty
                   <input
-                    type="radio"
-                    name="kind"
-                    value={kind}
-                    checked={values.kind === kind}
-                    onChange={update}
+                    id="honey"
+                    value={values.honey}
+                    onChange={(event) => setValues((current) => ({ ...current, honey: event.target.value }))}
+                    tabIndex={-1}
+                    autoComplete="off"
                   />
-                  <span>{kind}</span>
                 </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="field-row">
-            <div className="field">
-              <label htmlFor="name">Your name</label>
-              <input
-                id="name"
-                name="name"
-                value={values.name}
-                onChange={update}
-                autoComplete="name"
-                aria-invalid={errors.name ? "true" : undefined}
-                aria-describedby={errors.name ? "name-error" : undefined}
-              />
-              {errors.name ? <p id="name-error">{errors.name}</p> : null}
-            </div>
-
-            <div className="field">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={values.email}
-                onChange={update}
-                autoComplete="email"
-                aria-invalid={errors.email ? "true" : undefined}
-                aria-describedby={errors.email ? "email-error" : undefined}
-              />
-              {errors.email ? <p id="email-error">{errors.email}</p> : null}
-            </div>
-          </div>
-
-          <div className="field">
-            <div className="field-head">
-              <label htmlFor="organization">Company, organization, or project</label>
-              {requiresOrganization(values.kind) ? null : <span className="field-note">Optional</span>}
-            </div>
-            <input
-              id="organization"
-              name="organization"
-              value={values.organization}
-              onChange={update}
-              autoComplete="organization"
-              aria-invalid={errors.organization ? "true" : undefined}
-              aria-describedby={errors.organization ? "organization-error" : undefined}
-            />
-            {errors.organization ? <p id="organization-error">{errors.organization}</p> : null}
-          </div>
-
-          <div className="field">
-            <label htmlFor="message">Message</label>
-            <textarea
-              id="message"
-              name="message"
-              rows={6}
-              value={values.message}
-              onChange={update}
-              aria-invalid={errors.message ? "true" : undefined}
-              aria-describedby={errors.message ? "message-error" : undefined}
-            />
-            {errors.message ? <p id="message-error">{errors.message}</p> : null}
-          </div>
-
-          <button className="hire-button submit" type="submit">
-            Send message
-          </button>
-        </form>
-      )}
+              </div>
+              <p className="term-q" id="term-ask">
+                {question(step, values)}
+              </p>
+              {step === "kind" ? (
+                <label className="term-line" htmlFor="term-kind">
+                  <span className="term-prompt">{promptText(knownBefore(step, values))}</span>
+                  <select
+                    id="term-kind"
+                    ref={inputRef}
+                    className="term-select"
+                    defaultValue=""
+                    aria-labelledby="term-ask"
+                    aria-invalid={error ? "true" : undefined}
+                    aria-describedby={error ? "term-error" : undefined}
+                    onChange={(event) => {
+                      if (event.target.value) accept(event.target.value)
+                    }}
+                  >
+                    <option value="" disabled>
+                      choose
+                    </option>
+                    {kinds.map((kind) => (
+                      <option key={kind.value} value={kind.label}>
+                        {kind.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <label className="term-line" htmlFor="term-input">
+                  <span className="term-prompt">{promptText(knownBefore(step, values))}</span>
+                  <span className="term-entry">
+                    <span className="term-typed" aria-hidden="true">
+                      {draft}
+                    </span>
+                    <span className="term-cursor" aria-hidden="true" />
+                    <input
+                      id="term-input"
+                      ref={inputRef}
+                      className="term-input"
+                      value={draft}
+                      onChange={(event) => {
+                        setDraft(event.target.value)
+                        setError("")
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return
+                        event.preventDefault()
+                        accept(event.currentTarget.value)
+                      }}
+                      aria-labelledby="term-ask"
+                      aria-invalid={error ? "true" : undefined}
+                      aria-describedby={error ? "term-error" : undefined}
+                      autoComplete={step === "name" ? "name" : step === "email" ? "email" : step === "organization" ? "organization" : "off"}
+                      spellCheck={step === "message"}
+                    />
+                  </span>
+                </label>
+              )}
+              {error ? (
+                <p id="term-error" className="term-error" role="alert">
+                  {error}
+                </p>
+              ) : null}
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 // Edit this file to change the words on the site.
-// Version, publish time, downloads, and dependency count come from the npm registry.
+// For a project with an npm link, version, publish time, downloads, and
+// dependency count come from the registry. The others use the facts below.
 
 export const profile = {
   name: "Kathan Patel",
@@ -12,7 +13,6 @@ export const profile = {
     { label: "GitHub", href: "https://github.com/kathanp" },
     { label: "LinkedIn", href: "https://www.linkedin.com/in/kkp244/" },
     { label: "CodePen", href: "https://codepen.io/kathanp" },
-    { label: "Instagram", href: "https://www.instagram.com/kathanp/" },
     { label: "GitLab", href: "https://gitlab.com/kathanp" },
     { label: "npm", href: "https://www.npmjs.com/~kathan2404" },
   ],
@@ -23,9 +23,55 @@ export const nav = [
   { to: "/experience", label: "Experience", index: "02" },
   { to: "/projects", label: "Projects", index: "03" },
   { to: "/resume", label: "Resume", index: "04" },
+  { to: "/contact", label: "Contact", index: "05" },
 ]
 
-export const featured = [
+export const projects = [
+  {
+    name: "HaltPath",
+    blurb:
+      "Follow one payment, order, or claim id across Kafka services and say which failure hit it.",
+    summary:
+      "Give it one business id, such as a payment id, an order id, or a claim id. It shows the path that id took across every Kafka service, which failure pattern hit it, why, and what to change. It runs inside the customer's network.",
+    facts: ["v1.1.0", "Java", "Spring Boot", "Kafka"],
+    notes: [
+      {
+        label: "For",
+        text: "Companies that already move one business id through several Java services on Kafka. A payment, a claim, an order, or a shipment.",
+      },
+      {
+        label: "Does",
+        text: "A starter in each Spring service records the hops. One server beside Kafka and Postgres rebuilds the path, names the failure, and writes what to change. The id is HMAC-hashed before it leaves the service.",
+      },
+      {
+        label: "Leaves alone",
+        text: "It reports. A person decides whether to replay, move an offset, or change a setting. It does not sit in the payment path, and it does not read the payment body.",
+      },
+    ],
+  },
+  {
+    name: "apiversa",
+    blurb:
+      "Date-based API versioning for Node.js and Spring. One handler, and a change file keeps older clients working.",
+    summary:
+      "Date-based API versioning for Node.js and Spring. You write the newest handler once, and a change file keeps older clients working when a field is renamed or a number becomes an object.",
+    repo: "https://github.com/kathanp/apiversa",
+    facts: ["Apache-2.0", "Node.js", "Spring"],
+    notes: [
+      {
+        label: "For",
+        text: "Teams that ship breaking API changes and still have old apps and partner integrations in the field.",
+      },
+      {
+        label: "Does",
+        text: "Each client is pinned to a date, like 2026-01-15. The handler is written once, for the newest version. Each breaking change is one change file: old requests are upgraded, the handler runs, and the response is downgraded.",
+      },
+      {
+        label: "Leaves alone",
+        text: "It does not keep a copied handler for every version. Old clients keep their date until you retire it.",
+      },
+    ],
+  },
   {
     name: "fullshield",
     blurb: "Full-cycle security scanner for Node.js and TypeScript backends.",
@@ -71,21 +117,24 @@ export const featured = [
   },
 ]
 
+export const featured = projects.filter((item) => item.npm)
+
 export const experience = [
   {
     when: "2026 — Present",
     title: "Maintainer",
-    company: "fullshield and hubvik",
-    url: "https://www.npmjs.com/~kathan2404",
+    company: "HaltPath, apiversa, fullshield, and hubvik",
+    url: "https://github.com/kathanp",
     location: "Open source",
     summary:
-      "Two public packages. fullshield scans Node.js and TypeScript backends. hubvik reports unusual device traffic and leaves the traffic itself alone.",
+      "HaltPath traces one business id across Kafka services. apiversa keeps old API clients working from one handler. fullshield and hubvik are the two packages on npm.",
     points: [
+      "HaltPath takes a payment, order, or claim id and shows the path it took across Java services on Kafka, which failure hit it, and what to change. It reports. It does not sit in the payment path or read the payment body.",
+      "apiversa is date-based API versioning for Node.js and Spring. The newest handler is written once, and a change file keeps older clients working.",
       "fullshield is a security scanner for Node.js and TypeScript backends. The published cycle is detect, classify, report, notify, fix, and prevent.",
       "hubvik learns what each device normally does on a gateway, hub, or small appliance, then reports when that changes. It runs offline, has no dependencies, and does not block, drop, or rewrite traffic.",
-      "Releases are published from GitHub Actions to npm.",
     ],
-    tools: ["TypeScript", "Node.js", "npm", "GitHub Actions"],
+    tools: ["Java", "Spring Boot", "Kafka", "TypeScript", "Node.js", "npm", "GitHub Actions"],
   },
   {
     when: "Jan 2021 — Jun 2022",
@@ -170,6 +219,22 @@ export const experience = [
 export const archive = [
   {
     year: "2026",
+    name: "HaltPath",
+    where: "Open source",
+    built: ["Java", "Spring Boot", "Kafka", "React"],
+    line: "One business id, the path it took across Kafka, the failure, and what to change.",
+  },
+  {
+    year: "2026",
+    name: "apiversa",
+    where: "Open source",
+    built: ["Node.js", "Spring"],
+    line: "Date-based API versioning. One handler, and a change file keeps older clients working.",
+    url: "https://github.com/kathanp/apiversa",
+    link: "kathanp/apiversa",
+  },
+  {
+    year: "2026",
     name: "fullshield",
     where: "Open source",
     built: ["TypeScript", "Node.js"],
@@ -188,6 +253,7 @@ export const archive = [
     year: "2025",
     name: "Email Bot",
     where: "Infinite8 Solutions",
+    line: "A Flask app that sends mail through Gmail, with Google sign-in.",
     built: ["Python", "Flask", "Bootstrap"],
     url: "https://github.com/Infinite8-Solutions/Email_Bot",
     link: "Infinite8-Solutions/Email_Bot",
@@ -196,6 +262,7 @@ export const archive = [
     year: "2025",
     name: "Email Service",
     where: "Infinite8 Solutions",
+    line: "Campaign mail, with a React app, Python, AWS SES, and Stripe.",
     built: ["React", "Python", "AWS SES", "Stripe"],
     url: "https://github.com/Infinite8-Solutions/Email_service",
     link: "Infinite8-Solutions/Email_service",
@@ -204,6 +271,7 @@ export const archive = [
     year: "2025",
     name: "All Season Plans",
     where: "All Season Plans",
+    line: "A trip-planning site.",
     built: ["React"],
     url: "https://allseasonplans.com",
     link: "allseasonplans.com",
@@ -212,6 +280,7 @@ export const archive = [
     year: "2024",
     name: "KSY Landing",
     where: "KSY Group",
+    line: "A landing page for KSY Group.",
     built: ["Next.js", "TypeScript", "Tailwind"],
     url: "https://github.com/kathanp/KSY_Landing_Next",
     link: "kathanp/KSY_Landing_Next",
@@ -220,6 +289,7 @@ export const archive = [
     year: "2022",
     name: "Dropbox Replica",
     where: "Personal",
+    line: "File sync and group sharing, with React, Express, Kafka, and MySQL.",
     built: ["React", "Express", "Node.js", "Apache Kafka", "MySQL"],
     url: "https://github.com/kathanp/Dropbox-Replica",
     link: "kathanp/Dropbox-Replica",
@@ -228,6 +298,7 @@ export const archive = [
     year: "2022",
     name: "Emergency Panic",
     where: "Personal",
+    line: "A React Native app for sending an emergency alert.",
     built: ["React Native", "Expo"],
     url: "https://github.com/kathanp/EmergencyPanic",
     link: "kathanp/EmergencyPanic",
@@ -236,6 +307,7 @@ export const archive = [
     year: "2020",
     name: "MEDIplus",
     where: "Personal",
+    line: "A medicine distribution system.",
     built: [],
     url: "https://github.com/kathanp/MEDIplus",
     link: "kathanp/MEDIplus",
@@ -244,6 +316,7 @@ export const archive = [
     year: "2020",
     name: "CSC121",
     where: "Coursework",
+    line: "Coursework in C++.",
     built: ["C++"],
     url: "https://github.com/kathanp/CSC121",
     link: "kathanp/CSC121",
@@ -252,6 +325,7 @@ export const archive = [
     year: "2019",
     name: "Todo App",
     where: "Personal",
+    line: "A React todo list.",
     built: ["React"],
     url: "https://github.com/kathanp/TodoApp-kp",
     link: "kathanp/TodoApp-kp",
@@ -260,6 +334,7 @@ export const archive = [
     year: "2019",
     name: "Stock Market Calculator",
     where: "Personal",
+    line: "A React calculator for a stock trade.",
     built: ["React"],
     url: "https://github.com/kathanp/Stock-market-calculator",
     link: "kathanp/Stock-market-calculator",

@@ -9,7 +9,8 @@ export default function Experience() {
     <div className="page">
       <SectionHeading index="02">Experience</SectionHeading>
       <p className="lede">
-        fullshield and hubvik are the tools I publish in the open. Software engineer at USAA in
+        HaltPath, apiversa, fullshield, and hubvik are the tools I publish in the open. Software
+        engineer at USAA in
         Dallas from January 2021 to June 2022. Before that, junior software engineer at Synchrony
         Finance in Illinois. From
         December 2016 to April 2017, Java developer trainee at SculpSoft in Ahmedabad. From 2014 to

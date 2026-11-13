@@ -45,10 +45,14 @@ export default function Archive() {
                 )}
               </td>
               <td data-label="Link">
-                <a className="catalog-link" href={item.url} target="_blank" rel="noreferrer noopener">
-                  {item.url.includes("github.com") ? "GitHub" : "Site"}
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
+                {item.url ? (
+                  <a className="catalog-link" href={item.url} target="_blank" rel="noreferrer noopener">
+                    {item.url.includes("github.com") ? "GitHub" : "Site"}
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <span className="catalog-empty">—</span>
+                )}
               </td>
             </tr>
           ))}

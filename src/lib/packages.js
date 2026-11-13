@@ -2,11 +2,13 @@ import { featured } from "../content.js"
 
 const TTL = 30_000
 
-const specs = featured.map((item) => ({
-  name: item.name,
-  version: item.fallback.version,
-  license: item.fallback.license,
-}))
+const specs = featured
+  .filter((item) => item.npm && item.fallback)
+  .map((item) => ({
+    name: item.name,
+    version: item.fallback.version,
+    license: item.fallback.license,
+  }))
 
 let cache = null
 let inflight = null
