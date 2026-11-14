@@ -1131,7 +1131,7 @@ a {
   justify-self: center;
   width: min(820px, 100%);
   margin-inline: auto;
-  padding: 32px 28px 96px;
+  padding: 32px 28px 124px;
 }
 
 .stage.stage-center {
@@ -1163,6 +1163,27 @@ a {
   padding: 10px 20px;
   border-top: 1px solid var(--line);
   background: rgba(16, 18, 14, 0.96);
+}
+
+.statusline {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -10px -20px 0;
+  padding: 7px 20px;
+  border-bottom: 1px solid var(--line);
+  background: #0c0e0b;
+  color: var(--heading);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+.statusline-meta {
+  display: flex;
+  gap: 16px;
+  color: var(--muted);
 }
 
 .dock .signal {

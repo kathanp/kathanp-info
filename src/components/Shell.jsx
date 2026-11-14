@@ -5,6 +5,7 @@ import { CodePenIcon, GitHubIcon, GitLabIcon, LinkedInIcon, NpmIcon } from "./Ic
 import CommandBar from "./CommandBar.jsx"
 import Cursor from "./Cursor.jsx"
 import SignalBar from "./SignalBar.jsx"
+import StatusLine from "./StatusLine.jsx"
 
 const icons = {
   GitHub: GitHubIcon,
@@ -87,6 +88,7 @@ export default function Shell() {
             <Outlet />
           </main>
           <footer className="dock">
+            <StatusLine />
             <SignalBar />
             <div className="dock-end">
               <ul className="socials">
